@@ -22,6 +22,6 @@ app.include_router(user_rout.router)
 
 @app.get("/")
 def test_db(db:Session=Depends(get_db)):
-    users=db.query(models.user).all()
-    return{"status":users}
+    
+    return{"status":"running"}
 
