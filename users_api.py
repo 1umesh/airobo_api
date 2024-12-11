@@ -20,7 +20,7 @@ app=FastAPI()
 app.include_router(user_rout.router)
 
 
-@app.get("/sql")
+@app.get("/")
 def test_db(db:Session=Depends(get_db)):
     users=db.query(models.user).all()
     return{"status":users}
