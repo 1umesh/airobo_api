@@ -7,6 +7,7 @@ from database import engine, seesionlocal,get_db
 from schemas import res_user,User
 from passlib.context import CryptContext
 import aiofiles
+from PyPDF2 import PdfReader
 
 
 pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
@@ -59,13 +60,22 @@ async def submit_application(
     # Read the resume file content
     resume_data = await resume.read()
     resume_filename = resume.filename
+    
+    try:
+        reader = PdfReader(resume.file)
+        resume_text = ""
+        for page in reader.pages:
+            resume_text += page.extract_text()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")
+
 
     # Save data to the database
     user_application = models.UserApplication(
         name=name,
         email=email,
         cover_page=cover_page,
-        resume_filename=resume_filename,
+        resume_filename=resume_text,
         resume_data=resume_data,
     )
     db.add(user_application)
