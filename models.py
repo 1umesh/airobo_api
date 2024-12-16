@@ -27,13 +27,16 @@ class inquirey(Base):
     subject=Column(String,nullable=False)
     message=Column(String,nullable=False)
 
-class job(Base):
-    __tablename__='job'
-    id=Column(Integer,primary_key=True)
-    name=Column(String,nullable=False)
-    email=Column(String,nullable=False)
-    subject=Column(String,nullable=False)
-    message=Column(String,nullable=False)
-    resume=Column(LargeBinary,nullable=False)
-    
+class UserApplication(Base):
+    __tablename__ = "user_applications"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    cover_page = Column(String, nullable=False)
+    resume_filename = Column(String, nullable=False)
+    resume_data = Column(LargeBinary, nullable=False)
+    created_at=Column(TIMESTAMP(timezone=True),
+                      nullable=False,server_default=text('now()'))
+ 
+
     

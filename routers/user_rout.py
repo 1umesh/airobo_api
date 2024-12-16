@@ -1,11 +1,12 @@
-from models import user,inquirey,job
+from models import user,inquirey
 import models
 from schemas import User,res_user,Inquirey,Job
-from fastapi import Depends,HTTPException, status, APIRouter
+from fastapi import Depends,HTTPException, status, APIRouter, File ,Form, UploadFile
 from sqlalchemy.orm import Session
 from database import engine, seesionlocal,get_db
 from schemas import res_user,User
 from passlib.context import CryptContext
+import aiofiles
 
 
 pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
@@ -44,10 +45,33 @@ def send_inquirey(msg:Inquirey,db:Session=Depends(get_db)):
 
     return {"message":"send successfully"}
 
-@router.post("/send_resume", tags=["users"])
-def send_inquirey(msg:Job,db:Session=Depends(get_db)):
-    new_inquirey=models.job(**msg.dict())
-    db.add(new_inquirey)
-    db.commit()
+@router.post("/send_resume", tags=["send"])
+async def submit_application(
+    name: str = Form(...),
+    email: str = Form(...),
+    cover_page: str = Form(...),
+    resume: UploadFile = File(...),
+    db: Session = Depends(get_db)):
+    # Validate file type
+    if resume.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Resume must be a PDF file")
 
-    return {"message":"send successfully"}
+    # Read the resume file content
+    resume_data = await resume.read()
+    resume_filename = resume.filename
+
+    # Save data to the database
+    user_application = models.UserApplication(
+        name=name,
+        email=email,
+        cover_page=cover_page,
+        resume_filename=resume_filename,
+        resume_data=resume_data,
+    )
+    db.add(user_application)
+    db.commit()
+    db.refresh(user_application)
+
+    return {"message": "Application submitted successfully"}
+
+    
