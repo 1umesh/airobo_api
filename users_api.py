@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException,Response,status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import psycopg2
@@ -17,6 +18,14 @@ models.Base.metadata.create_all(bind=engine)
 pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
 
 app=FastAPI()
+
+app.add_middleware(CORSMiddleware,
+                   allow_origin=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"]
+                   )
+
 app.include_router(user_rout.router)
 
 
